@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
 import logging
-
+from .animation_manager import AnimationManager, load_images
 import numpy as np
 import pygame
 
@@ -47,7 +47,70 @@ class RobotConfig:
     ps_bottom_buffer: int = 5
     ps_give_biscuit_on_success: bool = True
     
-
+    animations=[]
+    print('starting Robot')
+    print('starting to load animations into memory')
+    print('Load Animations')
+    temp=load_images('/home/pi/MiniMax/Animations/greetings/')#0
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/seeyou/')#1
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/powerdown/')#2
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/advised/')#3
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/agegender/')#4
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/disagegender/')#5
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/disemotional/')#6
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/emotional/')#7
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/found-person/')#8
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/objective/')#9
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/searchmode-off/')#10
+    animations.append(temp)
+    print('10 Loaded')
+    temp=load_images('/home/pi/MiniMax/Animations/searchterminated/')#11
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/backwards/')#12
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/cautionmovingbackwards/')#13
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/cautionmovingforward/')#14
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/found-you/')#15
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/helpme/')#16
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/inmyway/')#17
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/search-on/')#18
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/search-person/')#19
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/left/')#20
+    animations.append(temp)
+    print('20 Loaded')
+    temp=load_images('/home/pi/MiniMax/Animations/movingback/')#21
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/movingforward/')#22
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/movingleft/')#23
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/movingright/')#24
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/neutral/')#25
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/right/')#26
+    animations.append(temp)
+    temp=load_images('/home/pi/MiniMax/Animations/forwards/')#27
+    animations.append(temp)
+    print('27 Loaded')
+    print('Finished loading animations into memory')
 
 
 # Enum's are a way to create a type with statically set values. They're an idea stolen from more
