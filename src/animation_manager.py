@@ -3,15 +3,18 @@ import os
 import pygame
 from .sound_manager import SoundManger
 from natsort import natsorted
-global resx, resy, yoffset, imp, initPygameOnce
+import numpy as np
+global resx, resy, yoffset, imp, initPygameOnce, animations
 resx=1280
 resy=800
 yoffset=70
 initPygameOnce=0
+animations=[]
 
 pygame.init()
-display = pygame.display.set_mode((1024, 768))
-#display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+#display = pygame.display.set_mode((1280, 800))
+#animations.append(pygame.image.load('/home/pi/MiniMax/Animations/powerdown/out_001.jpg'))
+display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 #imp = pygame.image.load('/home/pi/MiniMax/powerdown/001.jpg').convert()
 def load_images(path):
     store =[]
@@ -36,13 +39,11 @@ def load_images(path):
     image_array=[]
     return images
 
-
-
 class AnimationManager:
     def __init__(self, config) -> None:
-        self.display = pygame.display.set_mode((1024, 768))
-        #self.display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-        self.background = pygame.Surface(self.display.get_size())
+        #self.display = pygame.display.set_mode((1280, 800))
+        self.display = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        #self.background = pygame.Surface(self.display.get_size())
         #self.clock = pygame.time.Clock()
         self.animate_delay = config.animate_delay
         #self.sound_manager = SoundManger
@@ -66,10 +67,9 @@ class AnimationManager:
         self.display.blit(closedmouth, (0, 0)) # end animation with closed mouth .jpg 
         pygame.display.flip()
         
-    def load_animations(self, animations):
-        animations=[]
+    def load_animations(self):
         print('Load Animations')
-        temp=load_images('/home/pi/MiniMax/Animations/greetings/')#0
+        '''temp=load_images('/home/pi/MiniMax/Animations/greetings/')#0
         animations.append(temp)
         temp=load_images('/home/pi/MiniMax/Animations/seeyou/')#1
         animations.append(temp)
@@ -126,7 +126,7 @@ class AnimationManager:
         temp=load_images('/home/pi/MiniMax/Animations/right/')#26
         animations.append(temp)
         temp=load_images('/home/pi/MiniMax/Animations/forwards/')#27
-        animations.append(temp)
+        animations.append(temp)'''
         print('27 Loaded')
         return animations
        

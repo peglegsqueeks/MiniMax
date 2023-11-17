@@ -4,9 +4,9 @@ import logging
 import random
 import subprocess
 import serial
-import vlc
 import subprocess
 import os
+import numpy as np
 global animations, images, imp, display
 import pygame
 # local imports
@@ -97,8 +97,8 @@ class Robot:
     def animate(self, images):
         self.animator.animate(images)
         
-    def load(self, animations):
-        self.animator.load_animations(animations)
+    def load(self):
+        self.animator.load_animations()
         
     def run(self):
         self.start()
@@ -121,26 +121,20 @@ class Robot:
         self.exit()
     
     def start(self):
-        animations=[]
-        print('starting Robot')
-        print('starting to load animations into memory')
-        animations=self.load(animations)
-        print('Finished loading animations into memory')
         # take care of any startup activities here
         #logging.info("Starting")
         #images=load_images('/home/pi/MiniMax/Animations/greetings/')
         #self.say("Greetings Humans")
         #playvideo('/home/pi/MiniMax/DefaultSayings/greetings.mp4')
         self.sound_manager.play_sound("greetings")
-        self.animate(animations[0])
-        #images=[]
+        self.animate(self.config.animations[0])
         
     def exit(self):
         #logging.info("Exiting")
         # take care of any close down activities here.
         #images=load_images('/home/pi/MiniMax/Animations/powerdown/')
         self.sound_manager.play_sound("powerdown")
-        self.animate(animations[2])
+        self.animate(self.config.animations[2])
         #playvideo('/home/pi/MiniMax/DefaultSayings/powerdown.mp4')
         #self.sound_manager.play_sound("powerdown")
         #pygame.display.flip()

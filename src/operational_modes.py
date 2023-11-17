@@ -19,7 +19,7 @@ global stop_distance
 stop_distance=180
 
 class OperationalMode(ABC):
-    global animations
+
     @abstractmethod
     def run(self, robot):
         pass
@@ -35,7 +35,6 @@ class OperationalMode(ABC):
 class AgeGenderOperationalMode(OperationalMode):
     def __init__(self, config: RobotConfig = None) -> None:
         super().__init__()
-        
         if config is None:
             # use default config
             self.config = RobotConfig()
@@ -43,7 +42,6 @@ class AgeGenderOperationalMode(OperationalMode):
             self.config = config    
             #logging.debug("Starting AnimationManager")
         self.animator = AnimationManager(config=self.config)
-
         #logging.debug("Starting SoundManager")
         self.sound_manager = SoundManger(config=self.config)
         
@@ -64,7 +62,7 @@ class AgeGenderOperationalMode(OperationalMode):
         time.sleep(0.1)
         #images=load_images('/home/pi/MiniMax/Animations/agegender/')
         self.sound_manager.play_sound("agegender")
-        self.animate(animations[4])
+        self.animate(robot.config.animations[4])
         #robot.say("Detecting human age and gender")
         #robot.animate(1)
         #engine.runAndWait()
@@ -103,13 +101,13 @@ class AgeGenderOperationalMode(OperationalMode):
                         gender = np.squeeze(np.array(rec.getLayerFp16('prob')))
                         gender_str = "female" if gender[0] > gender[1] else "male"
 
-                        cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (10, 245, 10), 2)
+                        #cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (10, 245, 10), 2)
                         y = (bbox[1] + bbox[3]) // 2
                         
                         #cv2.putText(frame, gender_str, (bbox[0], y - 102), cv2.FONT_HERSHEY_TRIPLEX, 1, (0, 0, 0), 8)
                         #cv2.putText(frame, gender_str, (bbox[0], y - 102), cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 255, 255), 2)
-                        cv2.putText(frame, str(age), (bbox[0]+120, y-102), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (0, 0, 0), 8)
-                        cv2.putText(frame, str(age), (bbox[0]+120, y-102), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (255, 255, 255), 2)
+                        #cv2.putText(frame, str(age), (bbox[0]+120, y-102), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (0, 0, 0), 8)
+                        cv2.putText(frame, str(age), (bbox[0]+20, y-96), cv2.FONT_HERSHEY_TRIPLEX, 0.8, (255, 255, 255), 1)
                         #if stereo:
                         # You could also get detection.spatialCoordinates.x and detection.spatialCoordinates.y coordinates
                         #coords = "Z: {:.2f} m".format(detection.spatialCoordinates.z/1000)
@@ -127,7 +125,7 @@ class AgeGenderOperationalMode(OperationalMode):
         time.sleep(0.1)
         #images=load_images('/home/pi/MiniMax/Animations/disagegender/')
         self.sound_manager.play_sound("disagegender")
-        self.animate(animations[5])
+        self.animate(robot.config.animations[5])
         #robot.say("Age and Gender Detection disabled.")
 
         #robot.animate(1)
@@ -319,7 +317,7 @@ class EmotionOperationalMode(OperationalMode):
         #time.sleep(0.1)
         #images=load_images('/home/pi/MiniMax/Animations/emotional/')
         self.sound_manager.play_sound("emotional")
-        self.animate(animations[7])
+        self.animate(robot.config.animations[7])
         #robot.say("Detection of human emotional state enabled.")
         #robot.animate(1)
         robot.play_sound("Radar_scanning_chirp")
@@ -332,6 +330,8 @@ class EmotionOperationalMode(OperationalMode):
             device.startPipeline(self._create_pipeline(stereo))
             sync = TwoStageHostSeqSync()
             queues = {}
+            responses = ['neutral', 'happy', 'sad', 'surprise', 'anger']
+            neutral,happy,sad,surprise,anger=0,0,0,0,0
             # Create output queues
             for name in ["color", "detection", "recognition"]:
                 queues[name] = device.getOutputQueue(name)
@@ -345,25 +345,42 @@ class EmotionOperationalMode(OperationalMode):
                     frame = msgs["color"].getCvFrame()
                     detections = msgs["detection"].detections
                     recognitions = msgs["recognition"]
-
+                    
                     for i, detection in enumerate(detections):
                         bbox = frame_norm(frame, (detection.xmin, detection.ymin, detection.xmax, detection.ymax))
                         rec = recognitions[i]
                         emotion_results = np.array(rec.getFirstLayerFp16())
                         emotion_name = self.emotions[np.argmax(emotion_results)]
-                        cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (10, 245, 10), 2)
+                        #cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (10, 245, 10), 1)
                         y = (bbox[1] + bbox[3]) // 2
-                        cv2.putText(frame, emotion_name, (bbox[0]+20, y-100), cv2.FONT_HERSHEY_TRIPLEX, 1, (0, 0, 0), 8)
-                        cv2.putText(frame, emotion_name, (bbox[0]+20, y-100), cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 255, 255), 2)
-                        #if stereo:
+                        #cv2.putText(frame, emotion_name, (bbox[0]+10, y-110), cv2.FONT_HERSHEY_TRIPLEX, 1, (0, 0, 0), 7)
+                        cv2.putText(frame, emotion_name, (bbox[0], y-90), cv2.FONT_HERSHEY_TRIPLEX, 1, (255, 255, 255), 1)
+                        if emotion_name=="neutral":
+                            neutral=neutral +1
+                        if emotion_name=="happy":
+                            happy=happy +1
+                        if emotion_name=="sad":
+                            sad=sad +1
+                        if emotion_name=="surprise":
+                            surprise=surprise +1
+                        if emotion_name=="anger":
+                            anger=anger +1
+                        #print(emotion_name)    
+                        
+                            #self.animate(animations[7])
+                            #if stereo:
                             # You could also get detection.spatialCoordinates.x and detection.spatialCoordinates.y coordinates
                             #coords = "Z: {:.2f} m".format(detection.spatialCoordinates.z/1000)
                             #cv2.putText(frame, coords, (bbox[0], y + 80), cv2.FONT_HERSHEY_TRIPLEX, .7, (0, 0, 0), 8)
                             #cv2.putText(frame, coords, (bbox[0], y + 80), cv2.FONT_HERSHEY_TRIPLEX, .7, (255, 255, 255), 2)
+                    
                     #flipped = cv2.flip(frame, 0)
                     cv2.imshow("Camera", frame)
                 key_pressed=cv2.waitKey(1)
                 if key_pressed == ord('z'):
+                    if neutral>20 or happy>20 or sad>20 or surprise>20 or anger>20:
+                            max_response = max(zip(responses, (map(eval, responses))), key=lambda tuple: tuple[1])[0]
+                            self.sound_manager.play_sound(max_response)
                     break
 
     def _end(self, robot):
@@ -371,7 +388,7 @@ class EmotionOperationalMode(OperationalMode):
         time.sleep(0.1)
         #images=load_images('/home/pi/MiniMax/Animations/disemotional/')
         self.sound_manager.play_sound("disemotional")
-        self.animate(animations[6])
+        self.animate(robot.config.animations[6])
         #robot.say("Emotion Detection state disabled.")
         #robot.animate(1)
         #engine.runAndWait()
@@ -541,11 +558,9 @@ class ObjectSearchOperationMode(OperationalMode):
             'person',
             'cup',
         ]
-        global animations
         assert label in _supported_labels, f"label '{label}' is not in supported labels {_supported_labels}"
         self.label = label
         self.biscuit_mode = biscuit_mode
-
         if self.label == 'person':
             self.model_id = 15
             self.model_threshold = 0.5
@@ -582,17 +597,17 @@ class ObjectSearchOperationMode(OperationalMode):
             #self.sound_manager.play_sound("searchterminated")
             #self.animate(images)
             self.sound_manager.play_sound("search-on")
-            self.animate(animations[18])
+            self.animate(robot.config.animations[18])
             time.sleep(0.1)
             self.sound_manager.play_sound("search-person")
-            self.animate(animations[19])
+            self.animate(robot.config.animations[19])
             #robot.say(f"Search mode enabled. Searching for {self.label} who like jellybeans")
         else:
             self.sound_manager.play_sound("search-on")
-            self.animate(animations[18])
+            self.animate(robot.config.animations[18])
             time.sleep(0.1)
             self.sound_manager.play_sound("search-person")
-            self.animate(animations[19])
+            self.animate(robot.config.animations[19])
             #robot.say(f"Search mode enabled. Searching for {self.label}")
         #robot.animate(1)
         time.sleep(0.1)
@@ -619,11 +634,11 @@ class ObjectSearchOperationMode(OperationalMode):
                 us2 = int(UB.GetDistance2())
                 us3 = int(UB.GetDistance3())
                 if us1 == 0:
-                    us1=999
+                    us1=99999
                 if us2 == 0:
-                    us2=999
+                    us2=99999
                 if us3 == 0:
-                    us3=999
+                    us3=99999
                 imgFrame = preview.get()
                 track = tracklets.get()
                 counter+=1
@@ -655,20 +670,20 @@ class ObjectSearchOperationMode(OperationalMode):
                         found_people.popitem()
                     radius = 2
                     #cv2.putText(frame, str(label), (x1 + 10, y1 + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.7, color)
-                    cv2.putText(frame, f"ID: {[t.id]}", (x1 + 10, y1 + 45), cv2.FONT_HERSHEY_TRIPLEX, 0.7, color)
-                    cv2.putText(frame, t.status.name, (x1 + 10, y1 + 70), cv2.FONT_HERSHEY_TRIPLEX, 0.7, color)
-                    cv2.rectangle(frame, (x1, y1), (x2, y2), color, cv2.FONT_HERSHEY_SIMPLEX)
+                    #cv2.putText(frame, f"ID: {[t.id]}", (x1 + 10, y1 + 45), cv2.FONT_HERSHEY_TRIPLEX, 0.7, color)
+                    #cv2.putText(frame, t.status.name, (x1 + 10, y1 + 70), cv2.FONT_HERSHEY_TRIPLEX, 0.7, color)
+                    #cv2.rectangle(frame, (x1, y1), (x2, y2), color, cv2.FONT_HERSHEY_SIMPLEX)
                     #cv2.circle(frame, center_coordinates, radius, color, 1)
                 sorted_x = sorted(found_people.items(), key=operator.itemgetter(0))# key sort only items that are tracked, lowest key first #
                 if len(sorted_x)<1:
-                    robot.write_serial("5z")
-                if len(sorted_x)>0:
-                    for q in sorted_x:
+                    robot.write_serial("5z") # no tracked people in current frame
+                if len(sorted_x)>0: # found at least 1 tracked person in current frame
+                    for q in sorted_x: # devide sorted_x dictionary into component variables
                         listy=(q[1])
                         index=listy[0]
-                        status=listy[4]
+                        status=listy[4] # status indicates if person is tracked
                         if status=="TRACKED":
-                            sorted_tracked[index]=listy
+                            sorted_tracked[index]=listy #creates a dictionary of ONLY tracked persons with co-ords
                 if len(sorted_tracked)>0: # if the dictionary is not empty....
                     for w in sorted_tracked:
                         newlist=(sorted_tracked[w])
@@ -702,7 +717,7 @@ class ObjectSearchOperationMode(OperationalMode):
                         if (x_deviation>robot.config.ps_tolerance):
                             if x_deviation<175:
                                 pin="3z"
-                                #robot.write_serial(pin)
+                                robot.write_serial(pin)
                                 print('Old pin '+old_pin +'  '+pin+'........................... turning left' )
                                 #robot.say("left")
                                 r_person=0
@@ -728,11 +743,13 @@ class ObjectSearchOperationMode(OperationalMode):
                 cv2.putText(frame, "fps: {:.2f}".format(fps), (2, frame.shape[0] - 7), cv2.FONT_HERSHEY_TRIPLEX, 0.6, color)
                 key_pressed=cv2.waitKey(1)
                 if key_pressed==ord('z'):
-                    print('Aborting search z ')
-                    cv2.destroyAllWindows()
-                    print('menu waiting for keyboard input')
                     pin='5z'
                     robot.write_serial(pin)
+                    print('Aborting search z ')
+                    cv2.destroyAllWindows()
+                    self.sound_manager.play_sound("searchterminated")
+                    self.animate(robot.config.animations[11])
+                    print('menu waiting for keyboard input')
                     return False
                 sorted_tracked.clear()
                 cv2.imshow("tracker", frame)
@@ -763,13 +780,12 @@ class ObjectSearchOperationMode(OperationalMode):
         detectionNetwork.setBlobPath(robot.config.ps_nn_path)
         detectionNetwork.setConfidenceThreshold(self.model_threshold)
         detectionNetwork.input.setBlocking(False)
-        objectTracker.setDetectionLabelsToTrack([self.model_id])  # track only person
+        objectTracker.setDetectionLabelsToTrack([self.model_id])  # track only person, ignore other objects
         
         # possible tracking types: ZERO_TERM_COLOR_HISTOGRAM, ZERO_TERM_IMAGELESS, SHORT_TERM_IMAGELESS, SHORT_TERM_KCF
         objectTracker.setTrackerType(dai.TrackerType.ZERO_TERM_IMAGELESS)
         
         # take the smallest ID when new object is tracked, possible options: SMALLEST_ID, UNIQUE_ID
-        #objectTracker.setTrackerIdAssignmentPolicy(dai.TrackerIdAssignmentPolicy.SMALLEST_ID)
         #objectTracker.setTrackerIdAssignmentPolicy(dai.TrackerIdAssignmentPolicy.SMALLEST_ID)
         objectTracker.setTrackerIdAssignmentPolicy(dai.TrackerIdAssignmentPolicy.SMALLEST_ID)
 
@@ -793,12 +809,12 @@ class ObjectSearchOperationMode(OperationalMode):
             if success:
                 #images=load_images('/home/pi/MiniMax/Animations/found-person/')
                 self.sound_manager.play_sound("found-person")
-                self.animate(animations[8])
+                self.animate(robot.config.animations[8])
                 #robot.say(f'I think I found a {self.label}')
             else:
                 #images=load_images('/home/pi/MiniMax/Animations/searchterminated/')
                 self.sound_manager.play_sound("searchterminated")
-                self.animate(animations[11])
+                self.animate(robot.config.animations[11])
                 #robot.say("Search mode terminated")
             
             #robot.animate(1)
@@ -812,7 +828,7 @@ class ObjectSearchOperationMode(OperationalMode):
                 time.sleep(0.1)
                 #images=load_images('/home/pi/MiniMax/Animations/searchterminated/')
                 self.sound_manager.play_sound("searchterminated")
-                self.animate(animations[11])
+                self.animate(robot.config.animations[11])
                 #robot.say('Search mode Terminated.')
                 #robot.animate(1)
                 robot.play_sound('Radar_bleep_chirp')
@@ -828,7 +844,7 @@ class ObjectSearchOperationMode(OperationalMode):
                 time.sleep(0.1)
                 #images=load_images('/home/pi/MiniMax/Animations/objective/')
                 self.sound_manager.play_sound("objective")
-                self.animate(animations[9])
+                self.animate(robot.config.animations[9])
                 #robot.say("Objective reached.")
                 #robot.animate(1)
                 time.sleep(0.5)
@@ -864,8 +880,8 @@ class ObjectSearchOperationMode(OperationalMode):
 
         #robot.animate(1)
 
-        robot.write_serial('9z')  #do a 180 degree turn
-        robot.write_serial('2z')
+        robot.write_serial('9z')  # make robot do a 180 degree turn
+        robot.write_serial('2z')  # stop robot
         
         time.sleep(1)
 
